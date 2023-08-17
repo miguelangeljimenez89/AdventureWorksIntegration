@@ -1,5 +1,5 @@
 {
-	"name": "SourceDataset_k39",
+	"name": "sourcerawAdventureWorks",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "ds_df001_adventureWorks",
