@@ -3,20 +3,7 @@
 	"properties": {
 		"annotations": [],
 		"runtimeState": "Started",
-		"pipelines": [
-			{
-				"pipelineReference": {
-					"referenceName": "CopyrawPipeline",
-					"type": "PipelineReference"
-				},
-				"parameters": {
-					"windowStart": {
-						"type": "Expression",
-						"value": "@trigger().scheduledTime"
-					}
-				}
-			}
-		],
+		"pipelines": [],
 		"type": "ScheduleTrigger",
 		"typeProperties": {
 			"recurrence": {
