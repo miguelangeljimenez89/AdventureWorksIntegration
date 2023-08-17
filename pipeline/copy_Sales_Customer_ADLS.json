@@ -4,7 +4,7 @@
 		"description": "Copy Customer and Sales table from Azure SQL to Azure Datalake Storage.",
 		"activities": [
 			{
-				"name": "ForEach_k39",
+				"name": "For de tablas",
 				"type": "ForEach",
 				"dependsOn": [],
 				"userProperties": [],
@@ -15,7 +15,7 @@
 					},
 					"activities": [
 						{
-							"name": "Copy_k39",
+							"name": "Tablas a Mover",
 							"type": "Copy",
 							"dependsOn": [],
 							"policy": {
