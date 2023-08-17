@@ -19,7 +19,10 @@
 					"value": "@dataset().cw_fileName",
 					"type": "Expression"
 				},
-				"folderPath": "{year}/{month}/{day}",
+				"folderPath": {
+					"value": "@concat(formatDateTime(utcNow(), 'yyyy'), formatDateTime(utcNow(), 'MM'), formatDateTime(utcNow(), 'dd'))",
+					"type": "Expression"
+				},
 				"fileSystem": "rawcontainer"
 			},
 			"columnDelimiter": "|",
