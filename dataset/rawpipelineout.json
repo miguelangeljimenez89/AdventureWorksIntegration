@@ -1,5 +1,5 @@
 {
-	"name": "DestinationDataset_k39",
+	"name": "rawpipelineout",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "AzureDataLakeStorage1",
