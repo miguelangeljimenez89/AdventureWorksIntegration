@@ -70,7 +70,7 @@
 							},
 							"inputs": [
 								{
-									"referenceName": "SourceDataset_k39",
+									"referenceName": "sourcerawAdventureWorks",
 									"type": "DatasetReference",
 									"parameters": {
 										"cw_table": "@item().source.table"
@@ -79,7 +79,7 @@
 							],
 							"outputs": [
 								{
-									"referenceName": "DestinationDataset_k39",
+									"referenceName": "rawpipelineout",
 									"type": "DatasetReference",
 									"parameters": {
 										"cw_fileName": "@item().destination.fileName"
