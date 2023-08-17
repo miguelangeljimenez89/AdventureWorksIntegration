@@ -1,0 +1,11 @@
+{
+	"name": "AzureKeyVaultsqlAW",
+	"properties": {
+		"description": "AdventureWorks = AW",
+		"annotations": [],
+		"type": "AzureKeyVault",
+		"typeProperties": {
+			"baseUrl": "https://ResourcesAccess.vault.azure.net/"
+		}
+	}
+}
