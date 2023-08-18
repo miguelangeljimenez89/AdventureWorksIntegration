@@ -1,9 +1,9 @@
 {
-	"name": "Dim_Product",
+	"name": "Pipeline_Dim_Customer",
 	"properties": {
 		"activities": [
 			{
-				"name": "Dim_Product",
+				"name": "Dim_Customer",
 				"type": "Copy",
 				"dependsOn": [],
 				"policy": {
