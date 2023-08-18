@@ -1,0 +1,76 @@
+{
+	"name": "Pipeline_Fact_sales",
+	"properties": {
+		"activities": [
+			{
+				"name": "Fact_sales",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [
+					{
+						"name": "Source",
+						"value": "."
+					},
+					{
+						"name": "Destination",
+						"value": "anayticscontainer//Dim_Date"
+					}
+				],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "WITH Dim_Customer AS(\n    select \n        CustomerID\n        ,TRIM(ISNULL(Title,'')+ ' ' + ISNULL(FirstName,'') + ' ' + ISNULL(MiddleName,'') + ' ' + ISNULL(LastName,'') + ' ' +  ISNULL(Suffix,'')) as NameCustomer\n        ,CompanyName\n        ,SalesPerson\n        ,EmailAddress\n        ,Phone\n        --,Title,FirstName , MiddleName ,LastName,  Suffix\n        from SalesLT.Customer\n)\n,Dim_ProductCategory AS(\n    select\n    cat.ProductCategoryID as ProductCategoryKey\n    ,cat.Name AS NameCategory\n    ,ISNULL((select top 1 c1.Name from SalesLT.ProductCategory c1 where c1.ProductCategoryID = cat.ParentProductCategoryID),cat.Name) AS ParentCategory\n    ,ModifiedDate\n    from SalesLT.ProductCategory cat\n)\n,Dim_Product AS\n(\n    SELECT \n        ProductID as ProductKey\n        ,TRIM(Name) as ProductName\n        ,TRIM(ProductNumber) as SKUProduct\n        ,TRIM(Color) as Color\n        ,StandardCost as GeneralCost\n        ,ListPrice as ListPrice\n        ,ProductCategoryID as ProductCategoryKey\n        ,SellStartDate as Start_Date\n        ,SellEndDate as End_Date\n        ,ISNULL(DiscontinuedDate,'9999-12-31') as DiscontinuedDate\n        ,CASE WHEN SellEndDate IS NULL THEN 1 ELSE 0 END AS IsActive\n    FROM SalesLT.Product\n),\nFact_Sales AS (\nselect\nsoh.PurchaseOrderNumber as salesKey,\ncus.CustomerID as CustomerKey,\nconvert(varchar,(DATEPART(YEAR,soh.OrderDate)))+''+CONVERT(char(2),CONVERT(char(8), soh.OrderDate, 101)) as DateKey,\nsoh.SalesOrderNumber,\npro.ProductKey,\nsod.OrderQty as Quantity,\nsod.UnitPrice as UnitPrice,\nsod.UnitPriceDiscount as PriceDiscount,\nsoh.DueDate,\nsoh.ShipDate,\nsoh.Status,\nsoh.ShipMethod,\nsoh.subTotal,\nsoh.TaxAmt,\nsoh.Freight,\nsoh.TotalDue\n    FROM SalesLT.SalesOrderHeader soh \n        INNER JOIN SalesLT.SalesOrderDetail sod on sod.SalesOrderID = soh.SalesOrderID\n        INNER JOIN Dim_customer cus on cus.CustomerID = soh.CustomerID\n        INNER JOIN Dim_Product pro on pro.ProductKey = sod.ProductID\n)\nselect * from Fact_Sales order by DateKey asc",
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "DelimitedTextSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextWriteSettings",
+							"quoteAllText": true,
+							"fileExtension": ".txt"
+						}
+					},
+					"enableStaging": true,
+					"stagingSettings": {
+						"linkedServiceName": {
+							"referenceName": "AzureDataLakeStorage1",
+							"type": "LinkedServiceReference"
+						},
+						"path": "anayticscontainer"
+					},
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "linkedServer_SQL_AdventureWorks",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "out_Fact_sales",
+						"type": "DatasetReference"
+					}
+				]
+			}
+		],
+		"annotations": []
+	}
+}
