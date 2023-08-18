@@ -10,8 +10,7 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
-				"fileName": "Dim_Date.csv",
-				"fileSystem": "anayticscontainer"
+				"fileSystem": "curcontainer"
 			},
 			"columnDelimiter": "|",
 			"escapeChar": "\\",
