@@ -1,5 +1,5 @@
 {
-	"name": "SourceDataset_4j8",
+	"name": "linkedServer_SQL_AdventureWorks",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "ds_df001_adventureWorks",
