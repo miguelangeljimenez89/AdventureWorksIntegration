@@ -1,5 +1,5 @@
 {
-	"name": "DestinationDataset_4j8",
+	"name": "out_Dim_Date",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "AzureDataLakeStorage1",
