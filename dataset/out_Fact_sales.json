@@ -10,7 +10,7 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
-				"fileName": "Fact_sales",
+				"fileName": "Fact_sales.csv",
 				"fileSystem": "anayticscontainer"
 			},
 			"columnDelimiter": "|",
