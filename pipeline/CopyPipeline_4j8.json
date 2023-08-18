@@ -1,0 +1,76 @@
+{
+	"name": "CopyPipeline_4j8",
+	"properties": {
+		"activities": [
+			{
+				"name": "Copy_4j8",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [
+					{
+						"name": "Source",
+						"value": "."
+					},
+					{
+						"name": "Destination",
+						"value": "anayticscontainer//Dim_Date"
+					}
+				],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "-- prevent set or regional settings from interfering with \n-- interpretation of dates / literals\nSET DATEFIRST  7, -- 1 = Monday, 7 = Sunday\n    DATEFORMAT mdy, \n    LANGUAGE   US_ENGLISH;\n-- assume the above is here in all subsequent code blocks.\n\nDECLARE @StartDate  date = '20000101';\n\nDECLARE @CutoffDate date = DATEADD(DAY, -1, DATEADD(YEAR, 30, @StartDate));\n\n;WITH seq(n) AS \n(\n  SELECT 0 UNION ALL SELECT n + 1 FROM seq\n  WHERE n < DATEDIFF(DAY, @StartDate, @CutoffDate)\n),\nd(d) AS \n(\n  SELECT DATEADD(DAY, n, @StartDate) FROM seq\n),\nsrc AS (\n    SELECT \n        d,\n        ExactDate         = CONVERT(date, d),\n        ExactDay          = DATEPART(DAY,       d),\n        ExactDayName      = DATENAME(WEEKDAY,   d),\n        TheWeek         = DATEPART(WEEK,      d),\n        TheISOWeek      = DATEPART(ISO_WEEK,  d),\n        TheDayOfWeek    = DATEPART(WEEKDAY,   d),\n        TheMonth        = DATEPART(MONTH,     d),\n        TheMonthName    = DATENAME(MONTH,     d),\n        TheQuarter      = DATEPART(Quarter,   d),\n        TheYear         = DATEPART(YEAR,      d),\n        TheFirstOfMonth = DATEFROMPARTS(YEAR(d), MONTH(d), 1),\n        TheLastOfYear   = DATEFROMPARTS(YEAR(d), 12, 31),\n        TheDayOfYear    = DATEPART(DAYOFYEAR, d),\n        StandardQuarter        = DATEPART(QUARTER, d),\n        LateFiscalQuarter      = DATEPART(QUARTER, DATEADD(MONTH, -9, d)),\n        LateFiscalQuarterYear  = YEAR(DATEADD(MONTH, -9, d)),\n        EarlyFiscalQuarter     = DATEPART(QUARTER, DATEADD(MONTH,  3, d)),\n        EarlyFiscalQuarterYear = YEAR(DATEADD(MONTH,  3, d))\n    FROM d\n),\ndim AS\n(\n  SELECT\n    DateKey            = CONVERT(char(4), TheYear)+CONVERT(char(2), CONVERT(char(8), ExactDate, 101)),\n    ExactDate,\n    ExactDay,\n    ExactDayName,\n    TheDayOfWeek as DayOfweek,\n    DayOfWeekInMonth = CONVERT(tinyint, ROW_NUMBER() OVER (PARTITION BY TheFirstOfMonth, TheDayOfWeek ORDER BY ExactDate)),\n    --DayOfYear,\n    IsWeekend           = CASE WHEN TheDayOfWeek IN (CASE @@DATEFIRST WHEN 1 THEN 6 WHEN 7 THEN 1 END,7) THEN 1 ELSE 0 END,\n    TheWeek as NumberWeek,\n    TheISOweek as ISOweek,\n    FirstOfWeek      = DATEADD(DAY, 1 - TheDayOfWeek, ExactDate),\n    LastOfWeek       = DATEADD(DAY, 6, DATEADD(DAY, 1 - TheDayOfWeek, ExactDate)),\n    WeekOfMonth      = CONVERT(tinyint, DENSE_RANK() OVER (PARTITION BY TheYear, TheMonth ORDER BY TheWeek)),\n    TheMonth as NumberMonth,\n    TheMonthName as NameMonth,\n    TheFirstOfMonth as FirstOfMonth,\n    LastOfMonth      = MAX(ExactDate) OVER (PARTITION BY TheYear, TheMonth),\n    FirstOfNextMonth = DATEADD(MONTH, 1, TheFirstOfMonth),\n    LastOfNextMonth  = DATEADD(DAY, -1, DATEADD(MONTH, 2, TheFirstOfMonth)),\n    TheQuarter as QuarterMonth,\n    FirstOfQuarter   = MIN(ExactDate) OVER (PARTITION BY TheYear, TheQuarter),\n    LastOfQuarter    = MAX(ExactDate) OVER (PARTITION BY TheYear, TheQuarter),\n    TheYear as Año,\n    ISOYear          = TheYear - CASE WHEN TheMonth = 1 AND TheISOWeek > 51 THEN 1 WHEN TheMonth = 12 AND TheISOWeek = 1  THEN -1 ELSE 0 END,      \n    FirstOfYear      = DATEFROMPARTS(TheYear, 1,  1),\n    TheLastOfYear as LastOfYear,\n    LeapYear          = CONVERT(bit, CASE WHEN (TheYear % 400 = 0)  OR (TheYear % 4 = 0 AND TheYear % 100 <> 0)  THEN 1 ELSE 0 END),\n    Has53Weeks          = CASE WHEN DATEPART(WEEK,     TheLastOfYear) = 53 THEN 1 ELSE 0 END,\n    Has53ISOWeeks       = CASE WHEN DATEPART(ISO_WEEK, TheLastOfYear) = 53 THEN 1 ELSE 0 END,\n    --MMYYYY              = CONVERT(char(2), CONVERT(char(8), ExactDate, 101))+ CONVERT(char(4), TheYear),\n    Format101           = CONVERT(char(10), ExactDate, 101),\n    Format103           = CONVERT(char(10), ExactDate, 103),\n    Format112           = CONVERT(char(8),  ExactDate, 112),\n    Format120           = CONVERT(char(10), ExactDate, 120)\n  FROM src\n)\nSELECT * FROM dim\nORDER BY ExactDate\nOPTION (MAXRECURSION 0);",
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "DelimitedTextSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextWriteSettings",
+							"quoteAllText": true,
+							"fileExtension": ".txt"
+						}
+					},
+					"enableStaging": true,
+					"stagingSettings": {
+						"linkedServiceName": {
+							"referenceName": "AzureDataLakeStorage1",
+							"type": "LinkedServiceReference"
+						},
+						"path": "anayticscontainer"
+					},
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "SourceDataset_4j8",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DestinationDataset_4j8",
+						"type": "DatasetReference"
+					}
+				]
+			}
+		],
+		"annotations": []
+	}
+}
