@@ -1,0 +1,76 @@
+{
+	"name": "Pipeline_Dim_Product",
+	"properties": {
+		"activities": [
+			{
+				"name": "Dim_Product",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [
+					{
+						"name": "Source",
+						"value": "."
+					},
+					{
+						"name": "Destination",
+						"value": "anayticscontainer//Dim_Date"
+					}
+				],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "WITH Dim_Product AS\n(\n    SELECT \n        ProductID as ProductKey\n        ,TRIM(Name) as ProductName\n        ,TRIM(ProductNumber) as SKUProduct\n        ,TRIM(Color) as Color\n        ,StandardCost as GeneralCost\n        ,ListPrice as ListPrice\n        ,ProductCategoryID as ProductCategoryKey\n        ,SellStartDate as Start_Date\n        ,SellEndDate as End_Date\n        ,ISNULL(DiscontinuedDate,'9999-12-31') as DiscontinuedDate\n        ,CASE WHEN SellEndDate IS NULL THEN 1 ELSE 0 END AS IsActive\n    FROM SalesLT.Product\n)\nselect * from Dim_Product",
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "DelimitedTextSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextWriteSettings",
+							"quoteAllText": true,
+							"fileExtension": ".txt"
+						}
+					},
+					"enableStaging": true,
+					"stagingSettings": {
+						"linkedServiceName": {
+							"referenceName": "AzureDataLakeStorage1",
+							"type": "LinkedServiceReference"
+						},
+						"path": "anayticscontainer"
+					},
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "linkedServer_SQL_AdventureWorks",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "out_Dim_Product",
+						"type": "DatasetReference"
+					}
+				]
+			}
+		],
+		"annotations": []
+	}
+}
