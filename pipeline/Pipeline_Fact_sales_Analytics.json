@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Fact_sales",
+				"name": "Fact_sales_Analytics",
 				"type": "Copy",
 				"dependsOn": [],
 				"policy": {
