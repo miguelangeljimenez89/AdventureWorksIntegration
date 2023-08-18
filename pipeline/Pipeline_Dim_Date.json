@@ -59,13 +59,13 @@
 				},
 				"inputs": [
 					{
-						"referenceName": "SourceDataset_4j8",
+						"referenceName": "linkedServer_SQL_AdventureWorks",
 						"type": "DatasetReference"
 					}
 				],
 				"outputs": [
 					{
-						"referenceName": "DestinationDataset_4j8",
+						"referenceName": "out_Dim_Date",
 						"type": "DatasetReference"
 					}
 				]
