@@ -1,0 +1,76 @@
+{
+	"name": "Pipeline_Dim_ProductCategory",
+	"properties": {
+		"activities": [
+			{
+				"name": "Dim_ProductCategory",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [
+					{
+						"name": "Source",
+						"value": "."
+					},
+					{
+						"name": "Destination",
+						"value": "anayticscontainer//Dim_Date"
+					}
+				],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "WITH Dim_ProductCategory AS(\n    select\n    cat.ProductCategoryID as ProductCategoryKey\n    ,cat.Name AS NameCategory\n    ,ISNULL((select top 1 c1.Name from SalesLT.ProductCategory c1 where c1.ProductCategoryID = cat.ParentProductCategoryID),cat.Name) AS ParentCategory\n    ,ModifiedDate\n    from SalesLT.ProductCategory cat\n)\nselect * from Dim_ProductCategory",
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "DelimitedTextSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextWriteSettings",
+							"quoteAllText": true,
+							"fileExtension": ".txt"
+						}
+					},
+					"enableStaging": true,
+					"stagingSettings": {
+						"linkedServiceName": {
+							"referenceName": "AzureDataLakeStorage1",
+							"type": "LinkedServiceReference"
+						},
+						"path": "anayticscontainer"
+					},
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "linkedServer_SQL_AdventureWorks",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "out_Dim_ProductCategory",
+						"type": "DatasetReference"
+					}
+				]
+			}
+		],
+		"annotations": []
+	}
+}
