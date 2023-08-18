@@ -11,7 +11,7 @@
 			"location": {
 				"type": "AzureBlobFSLocation",
 				"fileName": "Fact_sales.csv",
-				"fileSystem": "anayticscontainer"
+				"fileSystem": "curcontainer"
 			},
 			"columnDelimiter": "|",
 			"escapeChar": "\\",
